@@ -1,3 +1,6 @@
 # Web-Calendar-App
 
-This app delivers a jQuery/Bootstrap calendar using Rocket framework built on Rust and communicates with a Cassandra database.
+This Rust app delivers a jQuery/Bootstrap calendar using Rocket web framework and communicates with a Cassandra database.
+
+The calendar: https://github.com/Paul-DS/bootstrap-year-calendar
+The web framework: https://github.com/SergioBenitez/Rocket
