@@ -1,0 +1,17 @@
+[package]
+name = "AlexCreamer"
+version = "0.1.0"
+authors = ["alexcreamer <carebear@nili.ca>"]
+
+[dependencies]
+rocket = "*"
+rocket_codegen = "*"
+serde = "0.8"
+serde_json = "0.8"
+serde_derive = "0.8"
+lazy_static = "*"
+cassandra = "*"
+
+[dependencies.rocket_contrib]
+default-features = false
+features = ["json"]
