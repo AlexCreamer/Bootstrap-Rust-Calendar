@@ -1,5 +1,5 @@
 [root]
-name = "AlexCreamer"
+name = "Boostrap-Calendar"
 version = "0.1.0"
 dependencies = [
  "cassandra 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",

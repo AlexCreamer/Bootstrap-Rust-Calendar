@@ -59,7 +59,8 @@ fn files(file: PathBuf) -> Option<NamedFile> {
 // TODO: This example can be improved by using `route` with muliple HTTP verbs.
 #[post("/save_event", format = "application/json", data = "<message>")]
 fn save(message: JSON<Event>) ->  &'static str {
-    "helloworld"
+	cassandra();
+	"hello cassandra"
 }
 
 #[error(404)]
@@ -84,19 +85,23 @@ fn cassandra(){
     match cluster.connect() {
         Ok(ref mut session) => {
             let result = session.execute(&query).wait().unwrap();
+		println!("{}", "Test1");
             println!("{}", result);
             for row in result.iter() {
                 let col: String = row.get_col_by_name(col_name).unwrap();
                 println!("ks name = {}", col);
             }
+		println!("{}", "Test2");
         }
         err => println!("{:?}", err),
     }
 }
 
 fn main() {
+
     rocket::ignite()
         .mount("/", routes![index, files, save])
         .catch(errors![not_found])
         .launch();
+
 }
