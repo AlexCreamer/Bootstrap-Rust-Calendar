@@ -6,9 +6,9 @@ authors = ["alexcreamer <carebear@nili.ca>"]
 [dependencies]
 rocket = "*"
 rocket_codegen = "*"
-serde = "0.8"
-serde_json = "0.8"
-serde_derive = "0.8"
+serde = "*"
+serde_json = "*"
+serde_derive = "*"
 lazy_static = "*"
 cassandra = "*"
 
