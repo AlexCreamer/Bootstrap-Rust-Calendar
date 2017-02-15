@@ -1,4 +1,5 @@
 #![feature(plugin)]
+#![feature(custom_derive, custom_attribute)]
 #![plugin(rocket_codegen)]
 
 extern crate rocket;
@@ -21,25 +22,11 @@ use rocket::response::NamedFile;
 extern crate cassandra;
 use cassandra::*;
 use std::str::FromStr;
-
-// The type to represent the ID of a message.
-type ID = usize;
-type SimpleMap = HashMap<&'static str, &'static str>;
-
-// We're going to store all of the messages here. No need for a DB.
-lazy_static! {
-    static ref MAP: Mutex<HashMap<ID, String>> = Mutex::new(HashMap::new());
-}
-
-#[derive(Serialize, Deserialize)]
-struct Message {
-    id: Option<ID>,
-    contents: String
-}
+use errors::*;
 
 #[derive(Serialize, Deserialize)]
 struct Event {
-    id: Option<ID>,
+    id: String,
     name: String,
     location: String,
     start_date: String,
@@ -59,22 +46,24 @@ fn files(file: PathBuf) -> Option<NamedFile> {
 // TODO: This example can be improved by using `route` with muliple HTTP verbs.
 #[post("/save_event", format = "application/json", data = "<message>")]
 fn save(message: JSON<Event>) ->  &'static str {
-	cassandra();
+	save_event(message);
 	"hello cassandra"
 }
 
 #[error(404)]
-fn not_found() -> JSON<SimpleMap> {
-    JSON(map! {
-        "status" => "error",
-        "reason" => "Resource was not found."
-    })
+fn not_found() ->  &'static str {
+    "Error: Resource was not found"
 }
 
-fn cassandra(){
+fn save_event(event: JSON<Event>){
+    let mut statement = stmt!("INSERT INTO events (id, name, location, start_date, end_date)
+        VALUES (?, ?, ?, ?, ?);");
 
-    let query = stmt!("SELECT keyspace_name FROM system_schema.keyspaces;");
-    let col_name = "keyspace_name";
+    statement.bind(0, event.id.as_str());
+    statement.bind(1, event.name.as_str());
+    statement.bind(2, event.location.as_str());
+    statement.bind(3, event.start_date.as_str());
+    statement.bind(4, event.end_date.as_str());
 
     let contact_points = ContactPoints::from_str("127.0.0.1").unwrap();
 
@@ -84,24 +73,15 @@ fn cassandra(){
 
     match cluster.connect() {
         Ok(ref mut session) => {
-            let result = session.execute(&query).wait().unwrap();
-		println!("{}", "Test1");
-            println!("{}", result);
-            for row in result.iter() {
-                let col: String = row.get_col_by_name(col_name).unwrap();
-                println!("ks name = {}", col);
-            }
-		println!("{}", "Test2");
+            let result = session.execute(&statement).wait().unwrap();
         }
         err => println!("{:?}", err),
     }
 }
 
 fn main() {
-
     rocket::ignite()
         .mount("/", routes![index, files, save])
         .catch(errors![not_found])
         .launch();
-
 }
